@@ -1,10 +1,11 @@
 # OXONO - Jogo
 
-Este jogo foi desenvolvido como parte dos requisitos da disciplina de Engenharia de Software I (INE5605) do Centro Tecnológico da Universidade Federal de Santa Catarina (UFSC).
+Este jogo foi desenvolvido como parte dos requisitos da disciplina de Engenharia de Software I (INE5417) do Centro Tecnológico da Universidade Federal de Santa Catarina (UFSC).
 
 ## Descrição
 
-OXONO é um jogo de tabuleiro estratégico para dois jogadores. O objetivo é alinhar quatro peças da mesma cor ou do mesmo símbolo (X ou O) em uma linha horizontal ou vertical.
+OXONO é um jogo de tabuleiro estratégico para dois jogadores. 
+O objetivo é alinhar quatro peças da mesma cor ou do mesmo símbolo (X ou O) em uma linha horizontal ou vertical.
 
 ## Regras do Jogo
 
@@ -17,6 +18,8 @@ OXONO é um jogo de tabuleiro estratégico para dois jogadores. O objetivo é al
 7.  **Condição de Vitória**: O jogador que conseguir alinhar quatro peças da mesma cor ou do mesmo símbolo em uma linha horizontal ou vertical vence o jogo.
 8.  **Empate**: Se todas as casas do tabuleiro forem preenchidas e nenhum jogador tiver vencido, o jogo termina em empate.
 9.  **Reiniciar Partida**: A qualquer momento, é possível reiniciar a partida clicando no botão "Reiniciar Partida".
+
+**Regras detalhadas:** [Clique aqui](https://cdn.shopify.com/s/files/1/0917/7972/7689/files/Oxono-ML7-25.pdf?v=1737297378) para acessar o documento completo com as regras detalhadas do jogo.
 
 ## Como Executar
 
