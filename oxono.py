@@ -6,7 +6,7 @@ class OxonoGame:
     def __init__(self):
         self.window = tk.Tk()
         self.window.title("OXONO - Jogo")
-        self.window.geometry("500x700")  # Aumentei a altura para acomodar o botão
+        self.window.geometry("500x700")
         self.window.resizable(False, False)
 
         self.current_player = "Vermelho"
@@ -108,7 +108,6 @@ class OxonoGame:
         self.cancel_button.pack(pady=5)
         self.cancel_button.config(state=tk.DISABLED)
 
-        # Botão de reiniciar partida
         self.restart_button = tk.Button(self.controls_frame, text="Reiniciar Partida", command=self.restart_game)
         self.restart_button.pack(pady=5)
 
@@ -216,53 +215,62 @@ class OxonoGame:
 
         end_cell_state = self.get_cell_state(end_row, end_col)
         if end_cell_state is not None:
-            return False, f"Casa de destino ({end_row},{end_col}) está ocupada."
+            if end_cell_state[0] == 'Totem':
+                return False, f"Casa de destino ({end_row},{end_col}) está ocupada por outro totem."
+
+            if not self.is_totem_surrounded(start_row, start_col):
+                return False, f"Casa de destino ({end_row},{end_col}) está ocupada."
 
         if start_row == end_row:
             step = 1 if end_col > start_col else -1
             for col in range(start_col + step, end_col, step):
-                if self.get_cell_state(start_row, col) is not None:
-                    return False, f"Caminho bloqueado pela peça em ({start_row},{col})."
+                if self.get_cell_state(start_row, col) is not None and (start_row,col)!= end_pos:
+                    if not self.is_totem_surrounded(start_row, start_col):
+                        return False, f"Caminho bloqueado pela peça em ({start_row},{col})."
         else:
             step = 1 if end_row > start_row else -1
             for row in range(start_pos[0] + step, end_pos[0], step):
-                if self.get_cell_state(row, start_pos[1]) is not None:
-                    return False, f"Caminho bloqueado pela peça em ({row},{start_pos[1]})."
+                if self.get_cell_state(row, start_pos[1]) is not None and (row,start_pos[1]) != end_pos:
+                    if not self.is_totem_surrounded(start_row, start_col):
+                        return False, f"Caminho bloqueado pela peça em ({row},{start_pos[1]})."
 
         return True, "Movimento válido"
 
+    def is_totem_surrounded(self, row, col):
+        surrounded = True
+        for dr, dc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+            r, c = row + dr, col + dc
+            if 0 <= r < 6 and 0 <= c < 6:
+                if self.get_cell_state(r, c) is None:
+                    surrounded = False
+                    break
+        return surrounded
+
     def check_win(self, row, col):
         symbol = self.board_buttons[row][col]["text"]
-        if symbol in ["X", "O"]:
-            if self.check_line(row, col, symbol=symbol):
-                return True
-
         color = self.board_buttons[row][col]["fg"]
-        if color in self.players.values():
-            if self.check_line(row, col, color=color):
-                return True
 
+        if self.check_line(row, col, symbol=symbol) or self.check_color_line(row, col, color=color):
+            return True
         return False
 
-    def check_line(self, row, col, symbol=None, color=None):
+    def check_line(self, row, col, symbol=None):
         directions = [(0, 1), (1, 0)]
         for dr, dc in directions:
             count = 1
             for i in range(1, 4):
                 r, c = row + i * dr, col + i * dc
                 if 0 <= r < 6 and 0 <= c < 6:
-                    if symbol and self.board_buttons[r][c]["text"] == symbol:
-                        count += 1
-                    elif color and self.board_buttons[r][c]["fg"] == color:
+                    cell_state = self.get_cell_state(r, c)
+                    if cell_state and cell_state[0] in self.players and cell_state[1] == symbol:
                         count += 1
                     else:
                         break
             for i in range(1, 4):
                 r, c = row - i * dr, col - i * dc
                 if 0 <= r < 6 and 0 <= c < 6:
-                    if symbol and self.board_buttons[r][c]["text"] == symbol:
-                        count += 1
-                    elif color and self.board_buttons[r][c]["fg"] == color:
+                    cell_state = self.get_cell_state(r, c)
+                    if cell_state and cell_state[0] in self.players and cell_state[1] == symbol:
                         count += 1
                     else:
                         break
@@ -270,6 +278,30 @@ class OxonoGame:
                 return True
         return False
 
+    def check_color_line(self, row, col, color=None):
+        directions = [(0, 1), (1, 0)]
+        for dr, dc in directions:
+            count = 1
+            for i in range(1, 4):
+                r, c = row + i * dr, col + i * dc
+                if 0 <= r < 6 and 0 <= c < 6:
+                    cell_state = self.get_cell_state(r, c)
+                    if cell_state and cell_state[0] in self.players and self.players[cell_state[0]] == color:
+                        count += 1
+                    else:
+                        break
+            for i in range(1, 4):
+                r, c = row - i * dr, col - i * dc
+                if 0 <= r < 6 and 0 <= c < 6:
+                    cell_state = self.get_cell_state(r, c)
+                    if cell_state and cell_state[0] in self.players and self.players[cell_state[0]] == color:
+                        count += 1
+                    else:
+                        break
+            if count >= 4:
+                return True
+        return False
+    
     def check_draw(self):
         total_pieces = sum(sum(p.values()) for p in self.pieces.values())
         placed_pieces = 0
@@ -315,6 +347,11 @@ class OxonoGame:
         is_adjacent = (abs(place_row - totem_r) == 1 and place_col == totem_c) or \
                      (abs(place_col - totem_c) == 1 and place_row == totem_r)
 
+        if self.is_totem_surrounded(totem_r, totem_c) and self.is_totem_surrounded(self.selected_totem_start_pos[0],self.selected_totem_start_pos[1]):
+            return True, "Posição válida"
+
+        if not is_adjacent:
+            return False, "A peça deve ser colocada adjacente ao totem."
         return True, "Posição válida"
 
     def game_over(self):
